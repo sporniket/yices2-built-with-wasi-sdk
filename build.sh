@@ -19,6 +19,13 @@ YICES2_BUILD=yices2-build
 WASI_SDK="wasi-sdk-${VERSION_OF_WASI_SDK}"
 WASI_SDK_URL=https://github.com/WebAssembly/wasi-sdk/releases/download/wasi-sdk-19/${WASI_SDK}-linux.tar.gz
 if ! [ -d ${WASI_SDK} ]; then curl -L ${WASI_SDK_URL} | tar xzf -; fi
+WASI_SDK_HOME=`pwd`/${WASI_SDK}
+WASI_SDK_PATH="${WASI_SDK_HOME}/bin"
+WASI_TOOLS="ar nm objdump ranlib strip"
+for t in ${WASI_TOOLS}; do
+    alias "wasm32-unknown-wasi-${t}"="${WASI_SDK_PATH}/${t}"
+done
+alias
 
 ### GNU MP library select source tarball, check existence or fetch
 GMP_RELEASE="gmp-${VERSION_OF_GMP}"
