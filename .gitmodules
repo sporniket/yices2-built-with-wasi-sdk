@@ -1,0 +1,3 @@
+[submodule "yices2-src"]
+	path = yices2-src
+	url = https://github.com/SRI-CSL/yices2.git
