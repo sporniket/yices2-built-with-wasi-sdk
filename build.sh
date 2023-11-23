@@ -21,11 +21,18 @@ WASI_SDK_URL=https://github.com/WebAssembly/wasi-sdk/releases/download/wasi-sdk-
 if ! [ -d ${WASI_SDK} ]; then curl -L ${WASI_SDK_URL} | tar xzf -; fi
 WASI_SDK_HOME=`pwd`/${WASI_SDK}
 WASI_SDK_PATH="${WASI_SDK_HOME}/bin"
+WASI_SYSROOT="${WASI_SDK_HOME}/share/wasi-sysroot"
 WASI_TOOLS="ar nm objdump ranlib strip"
 for t in ${WASI_TOOLS}; do
     alias "wasm32-unknown-wasi-${t}"="${WASI_SDK_PATH}/${t}"
 done
 alias
+
+if ! [ "$(which clang)" -eq "${WASI_SDK_PATH}/clang" ]; then
+    export PATH="${WASI_SDK_PATH}:${PATH}"
+fi
+
+echo "clang will be '$(which clang)'"
 
 ### GNU MP library select source tarball, check existence or fetch
 GMP_RELEASE="gmp-${VERSION_OF_GMP}"
@@ -41,3 +48,45 @@ if ! [ -d ${GMP_RELEASE} ]; then
     fi
     tar xf ${GMP_RELEASE_TARBALL}
 fi
+GMP_BUILD_DIR="${GMP_RELEASE}-build"
+if [ -d ${GMP_BUILD_DIR} ]; then
+    echo "Removing previous build of GMP..."
+    rm -Rf ${GMP_BUILD_DIR}
+fi
+mkdir "${GMP_BUILD_DIR}"
+
+###=###=###=###=###=###=###=###=###=###=###=###=###=###=###=###=###
+### Preparing builds
+###=###=###=###=###=###=###=###=###=###=###=###=###=###=###=###=###
+
+### redefining apps
+export CC="${WASI_SDK_PATH}/clang"
+#export AR="${WASI_SDK_HOME}/bin/llvm-ar"
+#export NM="${WASI_SDK_HOME}/bin/llvm-nm"
+export CC_FOR_BUILD="gcc"
+
+### defining flags common for BOTH builds
+export SYSROOT="${WASI_SDK_HOME}/share/wasi-sysroot"
+export CFLAGS="--target=wasm32-unknown-wasi -D_WASI_EMULATED_SIGNAL --sysroot=${SYSROOT}"
+export LDFLAGS="-Wl,--strip-all --sysroot=${SYSROOT}"
+LIBS_BEGIN="-lwasi-emulated-process-clocks -lwasi-emulated-signal"
+LIBS_END=" --sysroot=${SYSROOT}"
+export PKG_CONFIG_SYSROOT_DIR="${SYSROOT}"
+
+
+### others
+export TARGET="wasm32-unknown-wasi"
+#TARGET="wasm32-wasi"
+export ARCH="${TARGET}"
+
+###=###=###=###=###=###=###=###=###=###=###=###=###=###=###=###=###
+### Build Gnu MP
+###=###=###=###=###=###=###=###=###=###=###=###=###=###=###=###=###
+
+export LIBS="${LIBS_BEGIN} ${LIBS_END}"
+cd ${GMP_BUILD_DIR}
+../${GMP_RELEASE}/configure --host=${TARGET} --with-sysroot=${WASI_SYSROOT}
+make
+#make check
+make install exec_prefix=${WASI_SYSROOT} prefix=${WASI_SYSROOT}
+cd..
