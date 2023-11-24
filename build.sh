@@ -48,12 +48,22 @@ if ! [ -d ${GMP_RELEASE} ]; then
     fi
     tar xf ${GMP_RELEASE_TARBALL}
 fi
+
 GMP_BUILD_DIR="${GMP_RELEASE}-build"
+# -- when the script is reliable, remove cleaning or make it a special behaviour triggered by cli switch.
 if [ -d ${GMP_BUILD_DIR} ]; then
     echo "Removing previous build of GMP..."
     rm -Rf ${GMP_BUILD_DIR}
 fi
 mkdir "${GMP_BUILD_DIR}"
+
+GMP_PREFIX_DIR="$(pwd)/${GMP_RELEASE}-prefix"
+# -- when the script is reliable, remove cleaning or make it a special behaviour triggered by cli switch.
+if [ -d ${GMP_PREFIX_DIR} ]; then
+    echo "Removing previous install of GMP..."
+    rm -Rf ${GMP_PREFIX_DIR}
+fi
+mkdir "${GMP_PREFIX_DIR}"
 
 ###=###=###=###=###=###=###=###=###=###=###=###=###=###=###=###=###
 ### Preparing builds
@@ -88,5 +98,5 @@ cd ${GMP_BUILD_DIR}
 ../${GMP_RELEASE}/configure --host=${TARGET} --with-sysroot=${WASI_SYSROOT}
 make
 #make check
-make install exec_prefix=${WASI_SYSROOT} prefix=${WASI_SYSROOT}
-cd..
+make install exec_prefix=${GMP_PREFIX_DIR} prefix=${GMP_PREFIX_DIR}
+cd ..
