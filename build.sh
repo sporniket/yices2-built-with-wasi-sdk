@@ -93,6 +93,22 @@ if ! [ -d ${GMP_PREFIX_DIR} ]; then
         cd ${GMP_BUILD_DIR}
     fi
     make install exec_prefix=${GMP_PREFIX_DIR} prefix=${GMP_PREFIX_DIR}
+    cd ..
 fi
 
-cd ..
+###=###=###=###=###=###=###=###=###=###=###=###=###=###=###=###=###
+### Build Yices2
+###=###=###=###=###=###=###=###=###=###=###=###=###=###=###=###=###
+pwd
+${WASI_SDK_PATH}/clang --sysroot ${WASI_SYSROOT} -c getopt_long.c
+export CFLAGS="--target=wasm32-unknown-wasi -D_WASI_EMULATED_SIGNAL -D_WASI_EMULATED_PROCESS_CLOCKS --sysroot=${SYSROOT}"
+export LIBS="${LIBS_BEGIN} $(pwd)/getopt_long.o ${LIBS_END}"
+export CPPFLAGS="-I${GMP_PREFIX_DIR}/include"
+export LDFLAGS="-L${GMP_PREFIX_DIR}/lib"
+cd yices2-src
+cp ${WASI_SDK_HOME}/share/misc/config.guess ${WASI_SDK_HOME}/share/misc/config.sub .
+autoconf
+./configure --host=${TARGET}
+make -e show-config
+make -e show-details
+make -e
