@@ -23,10 +23,6 @@ WASI_SDK_HOME=`pwd`/${WASI_SDK}
 WASI_SDK_PATH="${WASI_SDK_HOME}/bin"
 WASI_SYSROOT="${WASI_SDK_HOME}/share/wasi-sysroot"
 WASI_TOOLS="ar nm objdump ranlib strip"
-for t in ${WASI_TOOLS}; do
-    alias "wasm32-unknown-wasi-${t}"="${WASI_SDK_PATH}/${t}"
-done
-alias
 
 if ! [ "$(which clang)" -eq "${WASI_SDK_PATH}/clang" ]; then
     export PATH="${WASI_SDK_PATH}:${PATH}"
