@@ -10,6 +10,7 @@ VERSION_OF_GMP="6.3.0"
 ###=###=###=###=###=###=###=###=###=###=###=###=###=###=###=###=###
 export SOURCE_DATE_EPOCH=$(git log -1 --format=%ct)
 YICES2_SRC=yices2-src
+YICES2_SRC_HOME=`pwd`/${YICES2_SRC}/src
 YICES2_BUILD=yices2-build
 
 ###=###=###=###=###=###=###=###=###=###=###=###=###=###=###=###=###
@@ -99,7 +100,7 @@ pwd
 ${WASI_SDK_PATH}/clang --sysroot ${WASI_SYSROOT} -c getopt_long.c
 export CFLAGS="--target=wasm32-unknown-wasi -D_WASI_EMULATED_SIGNAL -D_WASI_EMULATED_PROCESS_CLOCKS --sysroot=${SYSROOT}"
 export LIBS="${LIBS_BEGIN} $(pwd)/getopt_long.o ${LIBS_END}"
-export CPPFLAGS="-I${GMP_PREFIX_DIR}/include"
+export CPPFLAGS="-I${GMP_PREFIX_DIR}/include -I${YICES2_SRC_HOME}/include -I${SYSROOT}/include/c++/v1"
 export LDFLAGS="-L${GMP_PREFIX_DIR}/lib"
 cd yices2-src
 cp ${WASI_SDK_HOME}/share/misc/config.guess ${WASI_SDK_HOME}/share/misc/config.sub .
