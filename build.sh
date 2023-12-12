@@ -2,7 +2,8 @@
 ###=###=###=###=###=###=###=###=###=###=###=###=###=###=###=###=###
 ### SETUP vars
 ###=###=###=###=###=###=###=###=###=###=###=###=###=###=###=###=###
-VERSION_OF_WASI_SDK="19.0"
+VERSION_OF_WASI_SDK_MAJOR="20"
+VERSION_OF_WASI_SDK="${VERSION_OF_WASI_SDK_MAJOR}.0"
 VERSION_OF_GMP="6.3.0"
 
 ###=###=###=###=###=###=###=###=###=###=###=###=###=###=###=###=###
@@ -18,7 +19,7 @@ YICES2_BUILD=yices2-build
 ###=###=###=###=###=###=###=###=###=###=###=###=###=###=###=###=###
 ### WASI sdk select, check existence or fetch
 WASI_SDK="wasi-sdk-${VERSION_OF_WASI_SDK}"
-WASI_SDK_URL=https://github.com/WebAssembly/wasi-sdk/releases/download/wasi-sdk-19/${WASI_SDK}-linux.tar.gz
+WASI_SDK_URL=https://github.com/WebAssembly/wasi-sdk/releases/download/wasi-sdk-${VERSION_OF_WASI_SDK_MAJOR}/${WASI_SDK}-linux.tar.gz
 if ! [ -d ${WASI_SDK} ]; then curl -L ${WASI_SDK_URL} | tar xzf -; fi
 WASI_SDK_HOME=`pwd`/${WASI_SDK}
 WASI_SDK_PATH="${WASI_SDK_HOME}/bin"
@@ -100,7 +101,7 @@ pwd
 ${WASI_SDK_PATH}/clang --sysroot ${WASI_SYSROOT} -c getopt_long.c
 export CFLAGS="--target=wasm32-unknown-wasi -D_WASI_EMULATED_SIGNAL -D_WASI_EMULATED_PROCESS_CLOCKS --sysroot=${SYSROOT}"
 export LIBS="${LIBS_BEGIN} $(pwd)/getopt_long.o ${LIBS_END}"
-export CPPFLAGS="-I${GMP_PREFIX_DIR}/include -I${YICES2_SRC_HOME}/include -I${SYSROOT}/include/c++/v1"
+export CPPFLAGS="-I${GMP_PREFIX_DIR}/include -I${YICES2_SRC_HOME}/include"
 export LDFLAGS="-L${GMP_PREFIX_DIR}/lib"
 cd yices2-src
 cp ${WASI_SDK_HOME}/share/misc/config.guess ${WASI_SDK_HOME}/share/misc/config.sub .
