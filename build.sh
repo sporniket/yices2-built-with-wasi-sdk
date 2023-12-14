@@ -35,14 +35,14 @@ echo "clang will be '$(which clang)'"
 ### GNU MP library select source tarball, check existence or fetch
 GMP_RELEASE="gmp-${VERSION_OF_GMP}"
 GMP_RELEASE_TARBALL="${GMP_RELEASE}.tar"
-GMP_RELEASE_TARBALL_LZ="${GMP_RELEASE}.tar.lz"
-GMP_RELEASE_URL=https://gmplib.org/download/gmp/${GMP_RELEASE}.tar.lz
+GMP_RELEASE_TARBALL_COMPRESSED="${GMP_RELEASE}.tar.gz"
+GMP_RELEASE_URL=https://gmplib.org/download/gmp/${GMP_RELEASE_TARBALL_COMPRESSED}
 if ! [ -d ${GMP_RELEASE} ]; then 
     if ! [ -f ${GMP_RELEASE_TARBALL} ]; then 
-        if ! [ -f ${GMP_RELEASE_TARBALL_LZ} ]; then 
-            curl -L --output "${GMP_RELEASE_TARBALL_LZ}" ${GMP_RELEASE_URL} 
+        if ! [ -f ${GMP_RELEASE_TARBALL_COMPRESSED} ]; then 
+            curl -L --output "${GMP_RELEASE_TARBALL_COMPRESSED}" ${GMP_RELEASE_URL} 
         fi
-        lzip --decompress ${GMP_RELEASE_TARBALL_LZ}
+        gunzip ${GMP_RELEASE_TARBALL_COMPRESSED}
     fi
     tar xf ${GMP_RELEASE_TARBALL}
 fi
