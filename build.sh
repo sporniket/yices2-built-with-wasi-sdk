@@ -2,7 +2,7 @@
 ###=###=###=###=###=###=###=###=###=###=###=###=###=###=###=###=###
 ### SETUP vars
 ###=###=###=###=###=###=###=###=###=###=###=###=###=###=###=###=###
-VERSION_OF_WASI_SDK_MAJOR="20"
+VERSION_OF_WASI_SDK_MAJOR="19"
 VERSION_OF_WASI_SDK="${VERSION_OF_WASI_SDK_MAJOR}.0"
 VERSION_OF_GMP="6.3.0"
 
