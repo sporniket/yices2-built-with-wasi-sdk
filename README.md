@@ -6,7 +6,7 @@ If succesful, this project is meant to be a part of the [YoWASP](http://yowasp.o
 
 This project uses those projects : 
 
-* [Yices2](https://github.com/SRI-CSL/yices2)
+* [Yices2](https://github.com/SRI-CSL/yices2) BUT it uses in fact [a fork](https://github.com/sporniket/yices2) to store some patching in a special branch.
 * [WASI-SDK](https://github.com/WebAssembly/wasi-sdk)
 * [GNU MP BigNum library](https://gmplib.org)
 
