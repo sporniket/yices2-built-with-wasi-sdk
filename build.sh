@@ -80,6 +80,8 @@ export ARCH="${TARGET}"
 export LIBS="${LIBS_BEGIN} ${LIBS_END}"
 if ! [ -d ${GMP_PREFIX_DIR} ]; then 
     mkdir "${GMP_PREFIX_DIR}"
+fi
+if ! [ -f ${GMP_PREFIX_DIR}/lib/libgmp.a ]; then
     if ! [ -d ${GMP_BUILD_DIR} ]; then 
         mkdir "${GMP_BUILD_DIR}"
         cd ${GMP_BUILD_DIR}
