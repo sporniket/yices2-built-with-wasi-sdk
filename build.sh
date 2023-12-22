@@ -102,9 +102,10 @@ fi
 pwd
 ${WASI_SDK_PATH}/clang --sysroot ${WASI_SYSROOT} -c getopt_long.c
 export CFLAGS="--target=wasm32-unknown-wasi -D_WASI_EMULATED_SIGNAL -D_WASI_EMULATED_PROCESS_CLOCKS --sysroot=${SYSROOT}"
-export LIBS="${LIBS_BEGIN} $(pwd)/getopt_long.o ${LIBS_END}"
-export CPPFLAGS="-I${GMP_PREFIX_DIR}/include -I${YICES2_SRC_HOME}/include"
-export LDFLAGS="-L${GMP_PREFIX_DIR}/lib"
+export LIBS="${LIBS_BEGIN} -lgmp $(pwd)/getopt_long.o ${LIBS_END}"
+#export CPPFLAGS="-I${SYSROOT}/include/wasi -I${GMP_PREFIX_DIR}/include -I${YICES2_SRC_HOME} -I${YICES2_SRC_HOME}/include"
+export CPPFLAGS="-I${GMP_PREFIX_DIR}/include -I${YICES2_SRC_HOME} -I${YICES2_SRC_HOME}/include"
+export LDFLAGS="-Wl,--strip-all -L${GMP_PREFIX_DIR}/lib --sysroot=${SYSROOT}"
 cd yices2-src
 cp ${WASI_SDK_HOME}/share/misc/config.guess ${WASI_SDK_HOME}/share/misc/config.sub .
 autoconf
