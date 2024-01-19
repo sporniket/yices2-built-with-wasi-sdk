@@ -85,6 +85,7 @@ if ! [ -f ${GMP_PREFIX_DIR}/lib/libgmp.a ]; then
     if ! [ -d ${GMP_BUILD_DIR} ]; then 
         mkdir "${GMP_BUILD_DIR}"
         cd ${GMP_BUILD_DIR}
+        #if ! [ -f ]; then
         ../${GMP_RELEASE}/configure --host=${TARGET} --with-sysroot=${WASI_SYSROOT}
         make
         #make check # this fails, but no idea if it's because the 
@@ -112,4 +113,4 @@ autoconf
 ./configure --host=${TARGET}
 make -e show-config
 make -e show-details
-make -e
+make -e static-bin
