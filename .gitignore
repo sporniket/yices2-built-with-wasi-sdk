@@ -10,3 +10,7 @@
 
 ## gmp
 /gmp-*
+
+## local artefacts
+tmp.*
+local.*

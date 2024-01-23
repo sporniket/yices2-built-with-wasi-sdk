@@ -10,6 +10,13 @@ VERSION_OF_GMP="6.3.0"
 ### Download required projects
 ###=###=###=###=###=###=###=###=###=###=###=###=###=###=###=###=###
 export SOURCE_DATE_EPOCH=$(git log -1 --format=%ct)
+cat >tmp.pathes-yices2.mk <<END
+# ---<[YICES2 pathes]>---
+YICES2_SRC := `pwd`/yices2-src
+YICES2_SRC_HOME := \${YICES2_SRC}/src
+YICES2_BUILD := `pwd`/yices2-build
+END
+
 YICES2_SRC=yices2-src
 YICES2_SRC_HOME=`pwd`/${YICES2_SRC}/src
 YICES2_BUILD=yices2-build
@@ -21,6 +28,14 @@ YICES2_BUILD=yices2-build
 WASI_SDK="wasi-sdk-${VERSION_OF_WASI_SDK}"
 WASI_SDK_URL=https://github.com/WebAssembly/wasi-sdk/releases/download/wasi-sdk-${VERSION_OF_WASI_SDK_MAJOR}/${WASI_SDK}-linux.tar.gz
 if ! [ -d ${WASI_SDK} ]; then curl -L ${WASI_SDK_URL} | tar xzf -; fi
+cat >tmp.pathes-wasi.mk <<END
+# ---<[WASI SDK pathes]>---
+WASI_SDK_HOME := `pwd`/${WASI_SDK}
+WASI_SDK_PATH := \${WASI_SDK_HOME}/bin
+WASI_SYSROOT := \${WASI_SDK_HOME}/share/wasi-sysroot
+PATH += \${WASI_SDK_PATH}
+END
+
 WASI_SDK_HOME=`pwd`/${WASI_SDK}
 WASI_SDK_PATH="${WASI_SDK_HOME}/bin"
 WASI_SYSROOT="${WASI_SDK_HOME}/share/wasi-sysroot"
@@ -33,6 +48,13 @@ fi
 echo "clang will be '$(which clang)'"
 
 ### GNU MP library select source tarball, check existence or fetch
+cat >tmp.pathes-gmp.mk <<END
+# ---<[GMP pathes]>---
+GMP_RELEASE := gmp-${VERSION_OF_GMP}
+GMP_BUILD_DIR := `pwd`/\${GMP_RELEASE}-build
+GMP_PREFIX_DIR := `pwd`/\${GMP_RELEASE}-prefix"
+END
+
 GMP_RELEASE="gmp-${VERSION_OF_GMP}"
 GMP_RELEASE_TARBALL="${GMP_RELEASE}.tar"
 GMP_RELEASE_TARBALL_COMPRESSED="${GMP_RELEASE}.tar.gz"
