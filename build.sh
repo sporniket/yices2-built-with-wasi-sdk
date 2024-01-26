@@ -99,6 +99,26 @@ export ARCH="${TARGET}"
 ### Build Gnu MP
 ###=###=###=###=###=###=###=###=###=###=###=###=###=###=###=###=###
 
+cat >tmp.vars-gmp.mk <<END
+# ---<[GMP variables]>---
+# Requires : tmp.pathes-wasi.mk
+
+# -- apps
+CC := \${WASI_SDK_PATH}/clang
+CC_FOR_BUILD := gcc
+
+# -- flags 
+TARGET := wasm32-unknown-wasi
+ARCH := \${TARGET}
+SYSROOT := \${WASI_SDK_HOME}/share/wasi-sysroot
+CFLAGS := --target=\${TARGET} -D_WASI_EMULATED_SIGNAL --sysroot=\${SYSROOT}
+LDFLAGS := -Wl,--strip-all --sysroot=\${SYSROOT}
+LIBS_BEGIN := -lwasi-emulated-process-clocks -lwasi-emulated-signal
+LIBS_END := --sysroot=\${SYSROOT}
+LIBS := \${LIBS_BEGIN} \${LIBS_END}
+PKG_CONFIG_SYSROOT_DIR := \${SYSROOT}"
+END
+
 export LIBS="${LIBS_BEGIN} ${LIBS_END}"
 if ! [ -d ${GMP_PREFIX_DIR} ]; then 
     mkdir "${GMP_PREFIX_DIR}"
@@ -122,6 +142,26 @@ fi
 ###=###=###=###=###=###=###=###=###=###=###=###=###=###=###=###=###
 ### Build Yices2
 ###=###=###=###=###=###=###=###=###=###=###=###=###=###=###=###=###
+
+cat >tmp.vars-yices2.mk <<END
+# ---<[GMP variables]>---
+# Requires : tmp.pathes-wasi.mk, tmp.pathes-gmp.mk, tmp.pathes-yices2.mk
+
+# -- apps
+CC := \${WASI_SDK_PATH}/clang
+CC_FOR_BUILD := gcc
+
+# -- flags 
+SYSROOT := \${WASI_SDK_HOME}/share/wasi-sysroot
+CFLAGS := --target=\${TARGET} -D_WASI_EMULATED_SIGNAL -D_WASI_EMULATED_PROCESS_CLOCKS --sysroot=\${SYSROOT}
+CPPFLAGS := -I\${GMP_PREFIX_DIR}/include -I\${YICES2_SRC_HOME} -I\${YICES2_SRC_HOME}/include
+LDFLAGS := -Wl,--strip-all -L\${GMP_PREFIX_DIR}/lib --sysroot=\${SYSROOT}
+LIBS_BEGIN := -lwasi-emulated-process-clocks -lwasi-emulated-signal
+LIBS_END :=  --sysroot=\${SYSROOT}
+LIBS := \${LIBS_BEGIN} -lgmp $(pwd)/getopt_long.o \${LIBS_END}
+PKG_CONFIG_SYSROOT_DIR := \${SYSROOT}
+END
+
 pwd
 ${WASI_SDK_PATH}/clang --sysroot ${WASI_SYSROOT} -c getopt_long.c
 export CFLAGS="--target=wasm32-unknown-wasi -D_WASI_EMULATED_SIGNAL -D_WASI_EMULATED_PROCESS_CLOCKS --sysroot=${SYSROOT}"
