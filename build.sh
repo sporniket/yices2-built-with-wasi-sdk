@@ -33,7 +33,7 @@ cat >tmp.pathes-wasi.mk <<END
 WASI_SDK_HOME := `pwd`/${WASI_SDK}
 WASI_SDK_PATH := \${WASI_SDK_HOME}/bin
 WASI_SYSROOT := \${WASI_SDK_HOME}/share/wasi-sysroot
-PATH += \${WASI_SDK_PATH}
+PATH := \${WASI_SDK_PATH}:\${PATH}
 END
 
 WASI_SDK_HOME=`pwd`/${WASI_SDK}
