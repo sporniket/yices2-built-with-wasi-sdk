@@ -140,11 +140,34 @@ if ! [ -f ${GMP_PREFIX_DIR}/lib/libgmp.a ]; then
 fi
 
 ###=###=###=###=###=###=###=###=###=###=###=###=###=###=###=###=###
+### Build getopt_long.o
+###=###=###=###=###=###=###=###=###=###=###=###=###=###=###=###=###
+cat >tmp.pathes-getopt.mk <<END
+# ---<[GETOPT pathes]>---
+GETOPT_HOME := $(pwd)/getopt
+GETOPT_SRC := \${GETOPT_HOME}/getopt_long.c
+GETOPT_OBJ := \${GETOPT_HOME}/getopt_long.o
+END
+
+cat >tmp.vars-getopt.mk <<END
+# ---<[GETOPT variables]>---
+# Requires : tmp.pathes-wasi.mk
+
+# -- apps
+CC := \${WASI_SDK_PATH}/clang 
+
+# -- flags
+CFLAGS := --sysroot \${WASI_SYSROOT} -c 
+END
+
+make -C $(pwd)/getopt
+
+###=###=###=###=###=###=###=###=###=###=###=###=###=###=###=###=###
 ### Build Yices2
 ###=###=###=###=###=###=###=###=###=###=###=###=###=###=###=###=###
 
 cat >tmp.vars-yices2.mk <<END
-# ---<[GMP variables]>---
+# ---<[YICES2 variables]>---
 # Requires : tmp.pathes-wasi.mk, tmp.pathes-gmp.mk, tmp.pathes-yices2.mk
 
 # -- apps
@@ -158,14 +181,13 @@ CPPFLAGS := -I\${GMP_PREFIX_DIR}/include -I\${YICES2_SRC_HOME} -I\${YICES2_SRC_H
 LDFLAGS := -Wl,--strip-all -L\${GMP_PREFIX_DIR}/lib --sysroot=\${SYSROOT}
 LIBS_BEGIN := -lwasi-emulated-process-clocks -lwasi-emulated-signal
 LIBS_END :=  --sysroot=\${SYSROOT}
-LIBS := \${LIBS_BEGIN} -lgmp $(pwd)/getopt_long.o \${LIBS_END}
+LIBS := \${LIBS_BEGIN} -lgmp \${GETOPT_OBJ} \${LIBS_END}
 PKG_CONFIG_SYSROOT_DIR := \${SYSROOT}
 END
 
 pwd
-${WASI_SDK_PATH}/clang --sysroot ${WASI_SYSROOT} -c getopt_long.c
 export CFLAGS="--target=wasm32-unknown-wasi -D_WASI_EMULATED_SIGNAL -D_WASI_EMULATED_PROCESS_CLOCKS --sysroot=${SYSROOT}"
-export LIBS="${LIBS_BEGIN} -lgmp $(pwd)/getopt_long.o ${LIBS_END}"
+export LIBS="${LIBS_BEGIN} -lgmp $(pwd)/getopt/getopt_long.o ${LIBS_END}"
 #export CPPFLAGS="-I${SYSROOT}/include/wasi -I${GMP_PREFIX_DIR}/include -I${YICES2_SRC_HOME} -I${YICES2_SRC_HOME}/include"
 export CPPFLAGS="-I${GMP_PREFIX_DIR}/include -I${YICES2_SRC_HOME} -I${YICES2_SRC_HOME}/include"
 export LDFLAGS="-Wl,--strip-all -L${GMP_PREFIX_DIR}/lib --sysroot=${SYSROOT}"

@@ -14,3 +14,6 @@
 ## local artefacts
 tmp.*
 local.*
+
+## getopt folder rules
+/getopt/*.o
