@@ -4,8 +4,10 @@
 export SOURCE_DATE_EPOCH=$(git log -1 --format=%ct)
 
 ###=###=###=###=###=###=###=###=###=###=###=###=###=###=###=###=###
-### SETUP pathes and vars -- WASI
+### WASI
 ###=###=###=###=###=###=###=###=###=###=###=###=###=###=###=###=###
+# SETUP pathes and vars
+# --------
 VERSION_OF_WASI_SDK_MAJOR="19"
 VERSION_OF_WASI_SDK="${VERSION_OF_WASI_SDK_MAJOR}.0"
 WASI_SDK="wasi-sdk-${VERSION_OF_WASI_SDK}"
@@ -18,9 +20,17 @@ WASI_SYSROOT := \${WASI_SDK_HOME}/share/wasi-sysroot
 PATH := \${WASI_SDK_PATH}:\${PATH}
 END
 
+# --------
+# DOWNLOAD
+# --------
+WASI_SDK_URL=https://github.com/WebAssembly/wasi-sdk/releases/download/wasi-sdk-${VERSION_OF_WASI_SDK_MAJOR}/${WASI_SDK}-linux.tar.gz
+if ! [ -d ${WASI_SDK} ]; then curl -L ${WASI_SDK_URL} | tar xzf -; fi
+
 ###=###=###=###=###=###=###=###=###=###=###=###=###=###=###=###=###
-### SETUP pathes and vars -- GETOPT
+### GETOPT
 ###=###=###=###=###=###=###=###=###=###=###=###=###=###=###=###=###
+# SETUP pathes and vars
+# --------
 cat >tmp.pathes-getopt.mk <<END
 # ---<[GETOPT pathes]>---
 GETOPT_HOME := `pwd`/getopt
@@ -38,6 +48,11 @@ CC := \${WASI_SDK_PATH}/clang
 # -- flags
 CFLAGS := --sysroot \${WASI_SYSROOT} -c 
 END
+
+# --------
+# BUILD
+# --------
+make -C $(pwd)/getopt
 
 ###=###=###=###=###=###=###=###=###=###=###=###=###=###=###=###=###
 ### SETUP pathes and vars -- GMP
@@ -106,10 +121,6 @@ END
 ###=###=###=###=###=###=###=###=###=###=###=###=###=###=###=###=###
 ### Download required projects
 ###=###=###=###=###=###=###=###=###=###=###=###=###=###=###=###=###
-### WASI sdk select, check existence or fetch
-WASI_SDK_URL=https://github.com/WebAssembly/wasi-sdk/releases/download/wasi-sdk-${VERSION_OF_WASI_SDK_MAJOR}/${WASI_SDK}-linux.tar.gz
-if ! [ -d ${WASI_SDK} ]; then curl -L ${WASI_SDK_URL} | tar xzf -; fi
-
 WASI_SDK_HOME=`pwd`/${WASI_SDK}
 WASI_SDK_PATH="${WASI_SDK_HOME}/bin"
 WASI_SYSROOT="${WASI_SDK_HOME}/share/wasi-sysroot"
@@ -185,11 +196,6 @@ if ! [ -f ${GMP_PREFIX_DIR}/lib/libgmp.a ]; then
     make install exec_prefix=${GMP_PREFIX_DIR} prefix=${GMP_PREFIX_DIR}
     cd ..
 fi
-
-###=###=###=###=###=###=###=###=###=###=###=###=###=###=###=###=###
-### Build getopt_long.o
-###=###=###=###=###=###=###=###=###=###=###=###=###=###=###=###=###
-make -C $(pwd)/getopt
 
 ###=###=###=###=###=###=###=###=###=###=###=###=###=###=###=###=###
 ### Build Yices2
