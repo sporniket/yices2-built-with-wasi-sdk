@@ -61,6 +61,7 @@ VERSION_OF_GMP="6.3.0"
 cat >tmp.pathes-gmp.mk <<END
 # ---<[GMP pathes]>---
 GMP_RELEASE := gmp-${VERSION_OF_GMP}
+GMP_SOURCE_DIR := `pwd`/\${GMP_RELEASE}
 GMP_BUILD_DIR := `pwd`/\${GMP_RELEASE}-build
 GMP_PREFIX_DIR := `pwd`/\${GMP_RELEASE}-prefix"
 END
@@ -180,20 +181,29 @@ export ARCH="${TARGET}"
 export LIBS="${LIBS_BEGIN} ${LIBS_END}"
 if ! [ -d ${GMP_PREFIX_DIR} ]; then 
     mkdir "${GMP_PREFIX_DIR}"
-fi
-if ! [ -f ${GMP_PREFIX_DIR}/lib/libgmp.a ]; then
-    if ! [ -d ${GMP_BUILD_DIR} ]; then 
-        mkdir "${GMP_BUILD_DIR}"
-        cd ${GMP_BUILD_DIR}
-        #if ! [ -f ]; then
-        ../${GMP_RELEASE}/configure --host=${TARGET} --with-sysroot=${WASI_SYSROOT}
-        make
-        #make check # this fails, but no idea if it's because the 
-        # wasified thing must be run using wasm runtime or real failure.
-    else
-        cd ${GMP_BUILD_DIR}
+    cd ${GMP_PREFIX_DIR}
+    if ! [ -f "Makefile.yowasp" ]; then
+        cat >Makefile.yowasp <<END
+# pathes
+include ../tmp.pathes-wasi.mk
+include ../tmp.pathes-gmp.mk
+
+# vars
+include ../tmp.vars-gmp.mk
+
+lib/libgmp.a: \${GMP_BUILD_DIR}
+	cd \${GMP_BUILD_DIR}
+	\${GMP_SOURCE_DIR}/configure --host=\${TARGET} --with-sysroot=\${WASI_SYSROOT}
+	make
+	make install 
+
+\${GMP_BUILD_DIR}:
+	mkdir -p \${GMP_BUILD_DIR}
+END
     fi
-    make install exec_prefix=${GMP_PREFIX_DIR} prefix=${GMP_PREFIX_DIR}
+    echo "###=###=###=###=###=###=###=###=###=###=###=###=###=###=###=###=### Build Gnu MP"
+    make -f Makefile.yowasp exec_prefix=${GMP_PREFIX_DIR} prefix=${GMP_PREFIX_DIR}
+    echo "###=###=###=###=###=###=###=###=###=###=###=###=###=###=###=###=### DONE"
     cd ..
 fi
 
