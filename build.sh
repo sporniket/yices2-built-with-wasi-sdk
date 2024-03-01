@@ -151,6 +151,36 @@ GMP_BUILD_DIR="${GMP_RELEASE}-build"
 GMP_PREFIX_DIR="$(pwd)/${GMP_RELEASE}-prefix"
 
 ###=###=###=###=###=###=###=###=###=###=###=###=###=###=###=###=###
+### Build Gnu MP
+###=###=###=###=###=###=###=###=###=###=###=###=###=###=###=###=###
+
+if ! [ -d ${GMP_PREFIX_DIR} ]; then 
+    mkdir "${GMP_PREFIX_DIR}"
+    cd ${GMP_PREFIX_DIR}
+    cat >Makefile.yowasp <<END
+# pathes
+include ../tmp.pathes-wasi.mk
+include ../tmp.pathes-gmp.mk
+
+# vars
+include ../tmp.vars-gmp.mk
+
+lib/libgmp.a: \${GMP_BUILD_DIR}
+	cd \${GMP_BUILD_DIR}
+	\${GMP_SOURCE_DIR}/configure --host=\${TARGET} --with-sysroot=\${WASI_SYSROOT}
+	make
+	make install 
+
+\${GMP_BUILD_DIR}:
+	mkdir -p \${GMP_BUILD_DIR}
+END
+    echo "###=###=###=###=###=###=###=###=###=###=###=###=###=###=###=###=### Build Gnu MP"
+    make -f Makefile.yowasp exec_prefix=${GMP_PREFIX_DIR} prefix=${GMP_PREFIX_DIR}
+    echo "###=###=###=###=###=###=###=###=###=###=###=###=###=###=###=###=### DONE"
+    cd ..
+fi
+
+###=###=###=###=###=###=###=###=###=###=###=###=###=###=###=###=###
 ### Preparing builds
 ###=###=###=###=###=###=###=###=###=###=###=###=###=###=###=###=###
 
@@ -173,39 +203,6 @@ export PKG_CONFIG_SYSROOT_DIR="${SYSROOT}"
 export TARGET="wasm32-unknown-wasi"
 #TARGET="wasm32-wasi"
 export ARCH="${TARGET}"
-
-###=###=###=###=###=###=###=###=###=###=###=###=###=###=###=###=###
-### Build Gnu MP
-###=###=###=###=###=###=###=###=###=###=###=###=###=###=###=###=###
-
-export LIBS="${LIBS_BEGIN} ${LIBS_END}"
-if ! [ -d ${GMP_PREFIX_DIR} ]; then 
-    mkdir "${GMP_PREFIX_DIR}"
-    cd ${GMP_PREFIX_DIR}
-    if ! [ -f "Makefile.yowasp" ]; then
-        cat >Makefile.yowasp <<END
-# pathes
-include ../tmp.pathes-wasi.mk
-include ../tmp.pathes-gmp.mk
-
-# vars
-include ../tmp.vars-gmp.mk
-
-lib/libgmp.a: \${GMP_BUILD_DIR}
-	cd \${GMP_BUILD_DIR}
-	\${GMP_SOURCE_DIR}/configure --host=\${TARGET} --with-sysroot=\${WASI_SYSROOT}
-	make
-	make install 
-
-\${GMP_BUILD_DIR}:
-	mkdir -p \${GMP_BUILD_DIR}
-END
-    fi
-    echo "###=###=###=###=###=###=###=###=###=###=###=###=###=###=###=###=### Build Gnu MP"
-    make -f Makefile.yowasp exec_prefix=${GMP_PREFIX_DIR} prefix=${GMP_PREFIX_DIR}
-    echo "###=###=###=###=###=###=###=###=###=###=###=###=###=###=###=###=### DONE"
-    cd ..
-fi
 
 ###=###=###=###=###=###=###=###=###=###=###=###=###=###=###=###=###
 ### Build Yices2
