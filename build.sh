@@ -63,7 +63,7 @@ cat >tmp.pathes-gmp.mk <<END
 GMP_RELEASE := gmp-${VERSION_OF_GMP}
 GMP_SOURCE_DIR := `pwd`/\${GMP_RELEASE}
 GMP_BUILD_DIR := `pwd`/\${GMP_RELEASE}-build
-GMP_PREFIX_DIR := `pwd`/\${GMP_RELEASE}-prefix"
+GMP_PREFIX_DIR := `pwd`/\${GMP_RELEASE}-prefix
 END
 
 cat >tmp.vars-gmp.mk <<END
@@ -102,13 +102,15 @@ END
 
 cat >tmp.vars-yices2.mk <<END
 # ---<[YICES2 variables]>---
-# Requires : tmp.pathes-wasi.mk, tmp.pathes-gmp.mk, tmp.pathes-yices2.mk
+# Requires : tmp.pathes-wasi.mk, tmp.pathes-gmp.mk, tmp.pathes-getopt.mk, tmp.pathes-yices2.mk
 
 # -- apps
 CC := \${WASI_SDK_PATH}/clang
 CC_FOR_BUILD := gcc
 
 # -- flags 
+TARGET := wasm32-unknown-wasi
+ARCH := \${TARGET}
 SYSROOT := \${WASI_SDK_HOME}/share/wasi-sysroot
 CFLAGS := --target=\${TARGET} -D_WASI_EMULATED_SIGNAL -D_WASI_EMULATED_PROCESS_CLOCKS --sysroot=\${SYSROOT}
 CPPFLAGS := -I\${GMP_PREFIX_DIR}/include -I\${YICES2_SRC_HOME} -I\${YICES2_SRC_HOME}/include
@@ -198,39 +200,76 @@ fi
 ###=###=###=###=###=###=###=###=###=###=###=###=###=###=###=###=###
 
 ### redefining apps
-export CC="${WASI_SDK_PATH}/clang"
-#export AR="${WASI_SDK_HOME}/bin/llvm-ar"
-#export NM="${WASI_SDK_HOME}/bin/llvm-nm"
-export CC_FOR_BUILD="gcc"
+#export CC="${WASI_SDK_PATH}/clang"
+##export AR="${WASI_SDK_HOME}/bin/llvm-ar"
+##export NM="${WASI_SDK_HOME}/bin/llvm-nm"
+#export CC_FOR_BUILD="gcc"
 
 ### defining flags common for BOTH builds
-export SYSROOT="${WASI_SDK_HOME}/share/wasi-sysroot"
-export CFLAGS="--target=wasm32-unknown-wasi -D_WASI_EMULATED_SIGNAL --sysroot=${SYSROOT}"
-export LDFLAGS="-Wl,--strip-all --sysroot=${SYSROOT}"
-LIBS_BEGIN="-lwasi-emulated-process-clocks -lwasi-emulated-signal"
-LIBS_END=" --sysroot=${SYSROOT}"
-export PKG_CONFIG_SYSROOT_DIR="${SYSROOT}"
+#export SYSROOT="${WASI_SDK_HOME}/share/wasi-sysroot"
+#export CFLAGS="--target=wasm32-unknown-wasi -D_WASI_EMULATED_SIGNAL --sysroot=${SYSROOT}"
+#export LDFLAGS="-Wl,--strip-all --sysroot=${SYSROOT}"
+#LIBS_BEGIN="-lwasi-emulated-process-clocks -lwasi-emulated-signal"
+#LIBS_END=" --sysroot=${SYSROOT}"
+#export PKG_CONFIG_SYSROOT_DIR="${SYSROOT}"
 
 
 ### others
-export TARGET="wasm32-unknown-wasi"
+#export TARGET="wasm32-unknown-wasi"
 #TARGET="wasm32-wasi"
-export ARCH="${TARGET}"
+#export ARCH="${TARGET}"
 
 ###=###=###=###=###=###=###=###=###=###=###=###=###=###=###=###=###
 ### Build Yices2
 ###=###=###=###=###=###=###=###=###=###=###=###=###=###=###=###=###
 
 pwd
-export CFLAGS="--target=wasm32-unknown-wasi -D_WASI_EMULATED_SIGNAL -D_WASI_EMULATED_PROCESS_CLOCKS --sysroot=${SYSROOT}"
-export LIBS="${LIBS_BEGIN} -lgmp $(pwd)/getopt/getopt_long.o ${LIBS_END}"
-#export CPPFLAGS="-I${SYSROOT}/include/wasi -I${GMP_PREFIX_DIR}/include -I${YICES2_SRC_HOME} -I${YICES2_SRC_HOME}/include"
-export CPPFLAGS="-I${GMP_PREFIX_DIR}/include -I${YICES2_SRC_HOME} -I${YICES2_SRC_HOME}/include"
-export LDFLAGS="-Wl,--strip-all -L${GMP_PREFIX_DIR}/lib --sysroot=${SYSROOT}"
 cd yices2-src
 cp ${WASI_SDK_HOME}/share/misc/config.guess ${WASI_SDK_HOME}/share/misc/config.sub .
-autoconf
-./configure --host=${TARGET}
-make -e show-config
-make -e show-details
-make -e static-bin
+cat >Makefile.yowasp <<END
+# pathes
+include ../tmp.pathes-wasi.mk
+include ../tmp.pathes-gmp.mk
+include ../tmp.pathes-getopt.mk
+include ../tmp.pathes-yices2.mk
+
+# vars
+include ../tmp.vars-yices2.mk
+ENV_OVERRIDE := CC="\${CC}" \\
+  CC_FOR_BUILD="\${CC_FOR_BUILD}" \\
+  TARGET="\${TARGET}" \\
+  ARCH="\${ARCH}" \\
+  SYSROOT="\${SYSROOT}" \\
+  CFLAGS="\${CFLAGS}" \\
+  CPPFLAGS="\${CPPFLAGS}" \\
+  LDFLAGS="\${LDFLAGS}" \\
+  LIBS_BEGIN="\${LIBS_BEGIN}" \\
+  LIBS_END="\${LIBS_END}" \\
+  LIBS="\${LIBS}" \\
+  PKG_CONFIG_SYSROOT_DIR="\${PKG_CONFIG_SYSROOT_DIR}" \\
+
+
+build/wasm32-unknown-wasi-release/static_bin/yices_smtcomp/yices:
+	autoconf
+	./configure --host=\${TARGET} \${ENV_OVERRIDE}
+	grep "CPPFLAGS" configs/make.include.\${TARGET}
+	make -e static-bin \${ENV_OVERRIDE}
+
+END
+echo "###=###=###=###=###=###=###=###=###=###=###=###=###=###=###=###=### Build Yices2"
+make -f Makefile.yowasp
+echo "###=###=###=###=###=###=###=###=###=###=###=###=###=###=###=###=### DONE"
+
+#pwd
+#export CFLAGS="--target=wasm32-unknown-wasi -D_WASI_EMULATED_SIGNAL -D_WASI_EMULATED_PROCESS_CLOCKS --sysroot=${SYSROOT}"
+#export LIBS="${LIBS_BEGIN} -lgmp $(pwd)/getopt/getopt_long.o ${LIBS_END}"
+##export CPPFLAGS="-I${SYSROOT}/include/wasi -I${GMP_PREFIX_DIR}/include -I${YICES2_SRC_HOME} -I${YICES2_SRC_HOME}/include"
+#export CPPFLAGS="-I${GMP_PREFIX_DIR}/include -I${YICES2_SRC_HOME} -I${YICES2_SRC_HOME}/include"
+#export LDFLAGS="-Wl,--strip-all -L${GMP_PREFIX_DIR}/lib --sysroot=${SYSROOT}"
+#cd yices2-src
+#cp ${WASI_SDK_HOME}/share/misc/config.guess ${WASI_SDK_HOME}/share/misc/config.sub .
+#autoconf
+#./configure --host=${TARGET}
+#make -e show-config
+#make -e show-details
+#make -e static-bin
