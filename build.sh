@@ -4,12 +4,28 @@
 export SOURCE_DATE_EPOCH=$(git log -1 --format=%ct)
 
 ###=###=###=###=###=###=###=###=###=###=###=###=###=###=###=###=###
+### Dependencies specification
+###=###=###=###=###=###=###=###=###=###=###=###=###=###=###=###=###
+# Normally, only this section should be updated to migrate the dependencies
+# that are downloaded.
+# --------
+
+# --------
+# WASI SDK 
+# --------
+VERSION_OF_WASI_SDK_MAJOR="19"
+VERSION_OF_WASI_SDK="${VERSION_OF_WASI_SDK_MAJOR}.0"
+
+# --------
+# GMP
+# --------
+VERSION_OF_GMP="6.3.0"
+
+###=###=###=###=###=###=###=###=###=###=###=###=###=###=###=###=###
 ### WASI
 ###=###=###=###=###=###=###=###=###=###=###=###=###=###=###=###=###
 # SETUP pathes and vars
 # --------
-VERSION_OF_WASI_SDK_MAJOR="19"
-VERSION_OF_WASI_SDK="${VERSION_OF_WASI_SDK_MAJOR}.0"
 WASI_SDK="wasi-sdk-${VERSION_OF_WASI_SDK}"
 WASI_SDK_HOME=`pwd`/${WASI_SDK}
 
@@ -60,7 +76,6 @@ make -C $(pwd)/getopt
 ###=###=###=###=###=###=###=###=###=###=###=###=###=###=###=###=###
 # SETUP pathes and vars
 # --------
-VERSION_OF_GMP="6.3.0"
 cat >tmp.pathes-gmp.mk <<END
 # ---<[GMP pathes]>---
 GMP_RELEASE := gmp-${VERSION_OF_GMP}
