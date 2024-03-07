@@ -83,7 +83,7 @@ LDFLAGS := -Wl,--strip-all --sysroot=\${SYSROOT}
 LIBS_BEGIN := -lwasi-emulated-process-clocks -lwasi-emulated-signal
 LIBS_END := --sysroot=\${SYSROOT}
 LIBS := \${LIBS_BEGIN} \${LIBS_END}
-PKG_CONFIG_SYSROOT_DIR := \${SYSROOT}"
+PKG_CONFIG_SYSROOT_DIR := \${SYSROOT}
 END
 
 ###=###=###=###=###=###=###=###=###=###=###=###=###=###=###=###=###
@@ -112,10 +112,10 @@ CC_FOR_BUILD := gcc
 SYSROOT := \${WASI_SDK_HOME}/share/wasi-sysroot
 CFLAGS := --target=\${TARGET} -D_WASI_EMULATED_SIGNAL -D_WASI_EMULATED_PROCESS_CLOCKS --sysroot=\${SYSROOT}
 CPPFLAGS := -I\${GMP_PREFIX_DIR}/include -I\${YICES2_SRC_HOME} -I\${YICES2_SRC_HOME}/include
-LDFLAGS := -Wl,--strip-all -L\${GMP_PREFIX_DIR}/lib --sysroot=\${SYSROOT}
+LDFLAGS := -v -Wl,--strip-all -L\${GMP_PREFIX_DIR}/lib --sysroot=\${SYSROOT}
 LIBS_BEGIN := -lwasi-emulated-process-clocks -lwasi-emulated-signal
-LIBS_END :=  --sysroot=\${SYSROOT}
-LIBS := \${LIBS_BEGIN} -lgmp \${GETOPT_OBJ} \${LIBS_END}
+LIBS_END := --sysroot=\${SYSROOT}
+LIBS := \${LIBS_BEGIN} \${GETOPT_OBJ} \${LIBS_END}
 PKG_CONFIG_SYSROOT_DIR := \${SYSROOT}
 END
 
@@ -164,12 +164,25 @@ include ../tmp.pathes-gmp.mk
 
 # vars
 include ../tmp.vars-gmp.mk
+ENV_OVERRIDE := CC="\${CC}" \\
+  CC_FOR_BUILD="\${CC_FOR_BUILD}" \\
+  TARGET="\${TARGET}" \\
+  ARCH="\${ARCH}" \\
+  SYSROOT="\${SYSROOT}" \\
+  CFLAGS="\${CFLAGS}" \\
+  CPPFLAGS="\${CPPFLAGS}" \\
+  LDFLAGS="\${LDFLAGS}" \\
+  LIBS_BEGIN="\${LIBS_BEGIN}" \\
+  LIBS_END="\${LIBS_END}" \\
+  LIBS="\${LIBS}" \\
+  PKG_CONFIG_SYSROOT_DIR="\${PKG_CONFIG_SYSROOT_DIR}" \\
+  PATH="\${PATH}" \\
 
 lib/libgmp.a: \${GMP_BUILD_DIR}
 	cd \${GMP_BUILD_DIR}
-	\${GMP_SOURCE_DIR}/configure --host=\${TARGET} --with-sysroot=\${WASI_SYSROOT}
-	make
-	make install 
+	\${GMP_SOURCE_DIR}/configure --host=\${TARGET} --with-sysroot=\${WASI_SYSROOT} \${ENV_OVERRIDE}
+	make \${ENV_OVERRIDE}
+	make install \${ENV_OVERRIDE}
 
 \${GMP_BUILD_DIR}:
 	mkdir -p \${GMP_BUILD_DIR}
